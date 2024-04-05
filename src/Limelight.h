@@ -69,6 +69,10 @@ typedef struct _STREAM_CONFIGURATION {
     // Specifies the channel configuration of the audio stream.
     // See AUDIO_CONFIGURATION constants and MAKE_AUDIO_CONFIGURATION() below.
     int audioConfiguration;
+
+    // Specifies the mask of supported audio formats.
+    // See AUDIO_FORMAT constants below.
+    int supportAudioFormats;
     
     // Specifies the mask of supported video formats.
     // See VIDEO_FORMAT constants below.
@@ -216,6 +220,17 @@ typedef struct _DECODE_UNIT {
 // The maximum number of channels supported
 #define AUDIO_CONFIGURATION_MAX_CHANNEL_COUNT 8
 
+// Passed in StreamConfiguration.supportedAudioFormats to specify supported codecs
+// and to AudioRendererInit() to specify selected codec.
+#define AUDIO_FORMAT_OPUS        0x0001 // Opus audio codec
+#define AUDIO_FORMAT_AC3         0x0100 // AC3 audio codec
+#define AUDIO_FORMAT_AAC         0x1000 // AAC audio codec
+
+// Masks for clients to use to match audio codecs without profile-specific details.
+#define AUDIO_FORMAT_MASK_OPUS   0x000F
+#define AUDIO_FORMAT_MASK_AC3    0x0F00
+#define AUDIO_FORMAT_MASK_AAC    0xF000
+
 // Passed in StreamConfiguration.supportedVideoFormats to specify supported codecs
 // and to DecoderRendererSetup() to specify selected codec.
 #define VIDEO_FORMAT_H264        0x0001 // H.264 High Profile
@@ -334,6 +349,8 @@ typedef struct _OPUS_MULTISTREAM_CONFIGURATION {
 // specified in the stream configuration. Returns 0 on success, non-zero on failure.
 typedef int(*AudioRendererInit)(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void* context, int arFlags);
 
+typedef int(*AudioRendererInit2)(int audioFormat, int audioConfiguration, const OPUS_MULTISTREAM_CONFIGURATION *audioConfig, void* context, int arFlags);
+
 // This callback notifies the decoder that the stream is starting. No audio can be submitted before this callback returns.
 typedef void(*AudioRendererStart)(void);
 
@@ -348,6 +365,7 @@ typedef void(*AudioRendererDecodeAndPlaySample)(char* sampleData, int sampleLeng
 
 typedef struct _AUDIO_RENDERER_CALLBACKS {
     AudioRendererInit init;
+    AudioRendererInit2 init2;
     AudioRendererStart start;
     AudioRendererStop stop;
     AudioRendererCleanup cleanup;
@@ -512,6 +530,8 @@ typedef struct _SERVER_INFORMATION {
 
     // Specifies the 'ServerCodecModeSupport' from the /serverinfo response.
     int serverCodecModeSupport;
+
+    int serverAudioCodecSupport;
 } SERVER_INFORMATION, *PSERVER_INFORMATION;
 
 // Use this function to zero the server information when allocated on the stack or heap

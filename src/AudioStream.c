@@ -437,7 +437,12 @@ int startAudioStream(void* audioContext, int arFlags) {
 
     chosenConfig.samplesPerFrame = 48 * AudioPacketDuration;
 
-    err = AudioCallbacks.init(StreamConfig.audioConfiguration, &chosenConfig, audioContext, arFlags);
+    if (AudioCallbacks.init2) {
+        err = AudioCallbacks.init2(NegotiatedAudioFormat, StreamConfig.audioConfiguration, &chosenConfig, audioContext, arFlags);
+    }
+    else {
+        err = AudioCallbacks.init(StreamConfig.audioConfiguration, &chosenConfig, audioContext, arFlags);
+    }
     if (err != 0) {
         return err;
     }

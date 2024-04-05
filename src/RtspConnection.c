@@ -1091,6 +1091,13 @@ int performRtspHandshake(PSERVER_INFORMATION serverInfo) {
             }
         }
 
+        if ((StreamConfig.supportAudioFormats & AUDIO_FORMAT_MASK_AC3) && strstr(response.payload, "x-ss-audio.codec=ac3")) {
+            NegotiatedAudioFormat = AUDIO_FORMAT_AC3;
+        }
+        else {
+            NegotiatedAudioFormat = AUDIO_FORMAT_OPUS;
+        }
+
         // Look for the SDP attribute that indicates we're dealing with a server that supports RFI
         ReferenceFrameInvalidationSupported = strstr(response.payload, "x-nv-video[0].refPicInvalidation") != NULL;
         if (!ReferenceFrameInvalidationSupported) {

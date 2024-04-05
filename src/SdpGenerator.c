@@ -509,7 +509,13 @@ static PSDP_OPTION getAttributesList(char*urlSafeAddr) {
                 AudioPacketDuration = 5;
             }
         }
-
+        if (NegotiatedAudioFormat & AUDIO_FORMAT_MASK_AAC) {
+            err |= addAttributeString(&optionHead, "x-nv-aqos.bitStreamFormat", "2");
+        } else if (NegotiatedVideoFormat & AUDIO_FORMAT_MASK_AC3) {
+            err |= addAttributeString(&optionHead, "x-nv-aqos.bitStreamFormat", "1");
+        } else {
+            err |= addAttributeString(&optionHead, "x-nv-aqos.bitStreamFormat", "0");
+        }
         snprintf(payloadStr, sizeof(payloadStr), "%d", AudioPacketDuration);
         err |= addAttributeString(&optionHead, "x-nv-aqos.packetDuration", payloadStr);
     }
