@@ -515,6 +515,16 @@ void LiInitializeConnectionCallbacks(PCONNECTION_LISTENER_CALLBACKS clCallbacks)
 #define SCM_MASK_AV1    (SCM_AV1_MAIN8 | SCM_AV1_MAIN10)
 #define SCM_MASK_10BIT  (SCM_HEVC_MAIN10 | SCM_AV1_MAIN10)
 
+// ServerAudioCodecSupport values
+#define SAC_OPUS 0x00001
+#define SAC_AC3  0x00100
+#define SAC_AAC  0x01000
+
+// ServerAudioCodecSupport masks
+#define SAC_MASK_OPUS  0x0000F
+#define SAC_MASK_AC3   0x00F00
+#define SAC_MASK_AAC   0x0F000
+
 typedef struct _SERVER_INFORMATION {
     // Server host name or IP address in text form
     const char* address;
