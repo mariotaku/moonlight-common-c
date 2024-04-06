@@ -72,7 +72,7 @@ typedef struct _STREAM_CONFIGURATION {
 
     // Specifies the mask of supported audio formats.
     // See AUDIO_FORMAT constants below.
-    int supportAudioFormats;
+    int supportedAudioFormats;
     
     // Specifies the mask of supported video formats.
     // See VIDEO_FORMAT constants below.
