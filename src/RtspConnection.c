@@ -1091,7 +1091,7 @@ int performRtspHandshake(PSERVER_INFORMATION serverInfo) {
             }
         }
 
-        if ((StreamConfig.supportedAudioFormats & AUDIO_FORMAT_MASK_AC3) && strstr(response.payload, "x-ss-audio.codec=ac3")) {
+        if ((StreamConfig.supportedAudioFormats & AUDIO_FORMAT_MASK_AC3) && strstr(response.payload, "x-ss-audio.supportedCodec=ac3")) {
             NegotiatedAudioFormat = AUDIO_FORMAT_AC3;
         }
         else {
