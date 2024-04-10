@@ -509,7 +509,7 @@ static PSDP_OPTION getAttributesList(char*urlSafeAddr) {
                 AudioPacketDuration = 5;
             }
         }
-        if (NegotiatedVideoFormat & AUDIO_FORMAT_MASK_AC3) {
+        if (NegotiatedAudioFormat & AUDIO_FORMAT_MASK_AC3) {
             err |= addAttributeString(&optionHead, "x-ss-audio.codec", "1");
             AudioPacketDuration = 32;
         } else if (NegotiatedAudioFormat & AUDIO_FORMAT_MASK_AAC) {
