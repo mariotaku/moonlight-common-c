@@ -104,7 +104,7 @@
 #ifdef LC_FUZZING
 #define LC_ASSERT_VT(x)
 #else
-#define LC_ASSERT_VT(x) LC_ASSERT(x)
+#define LC_ASSERT_VT(x) if (!(x)) Limelog("%s:%d: Assertion failed: %s", __FILE_NAME__, __LINE__, __STRING(x))
 #endif
 
 #ifdef _MSC_VER

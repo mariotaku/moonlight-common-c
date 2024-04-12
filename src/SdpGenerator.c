@@ -492,7 +492,7 @@ static PSDP_OPTION getAttributesList(char*urlSafeAddr) {
             HighQualitySurroundEnabled = true;
 
             // Use 5 ms frames since we don't have a slow decoder
-            AudioPacketDuration = 5;
+            AudioPacketDurationX3 = 5 * 3;
         }
         else {
             err |= addAttributeString(&optionHead, "x-nv-audio.surround.AudioQuality", "0");
@@ -502,27 +502,32 @@ static PSDP_OPTION getAttributesList(char*urlSafeAddr) {
                      ((AudioCallbacks.capabilities & CAPABILITY_SUPPORTS_ARBITRARY_AUDIO_DURATION) != 0 &&
                        StreamConfig.bitrate < LOW_AUDIO_BITRATE_TRESHOLD)) {
                 // Use 10 ms packets for slow devices and networks to balance latency and bandwidth usage
-                AudioPacketDuration = 10;
+                AudioPacketDurationX3 = 10 * 3;
             }
             else {
                 // Use 5 ms packets by default for lowest latency
-                AudioPacketDuration = 5;
+                AudioPacketDurationX3 = 5 * 3;
             }
         }
         if (NegotiatedAudioFormat & AUDIO_FORMAT_MASK_AC3) {
-            err |= addAttributeString(&optionHead, "x-ss-audio.codec", "1");
-            AudioPacketDuration = 32;
-        } else if (NegotiatedAudioFormat & AUDIO_FORMAT_MASK_AAC) {
-            err |= addAttributeString(&optionHead, "x-ss-audio.codec", "2");
+            snprintf(payloadStr, sizeof(payloadStr), "%d", NegotiatedAudioFormat);
+            err |= addAttributeString(&optionHead, "x-ss-audio.codec", payloadStr);
+            if (NegotiatedAudioFormat == AUDIO_FORMAT_EAC3) {
+                AudioPacketDurationX3 = 16 /* ~5.3333ms */;
+                strncpy(payloadStr, "16/3", sizeof(payloadStr));
+            } else {
+                AudioPacketDurationX3 = 32 * 3;
+                snprintf(payloadStr, sizeof(payloadStr), "%d", AudioPacketDurationX3 / 3);
+            }
         } else {
             err |= addAttributeString(&optionHead, "x-ss-audio.codec", "0");
+            snprintf(payloadStr, sizeof(payloadStr), "%d", AudioPacketDurationX3 / 3);
         }
-        snprintf(payloadStr, sizeof(payloadStr), "%d", AudioPacketDuration);
         err |= addAttributeString(&optionHead, "x-nv-aqos.packetDuration", payloadStr);
     }
     else {
         // 5 ms duration for legacy servers
-        AudioPacketDuration = 5;
+        AudioPacketDurationX3 = 5 * 3;
 
         // High quality audio mode not supported on legacy servers
         HighQualitySurroundEnabled = false;

@@ -245,7 +245,7 @@ static void AudioReceiveThreadProc(void* context) {
     int waitingForAudioMs;
 
     packet = NULL;
-    packetsToDrop = 500 / AudioPacketDuration;
+    packetsToDrop = 500 * 3 / AudioPacketDurationX3;
 
     if (setNonFatalRecvTimeoutMs(rtpSocket, UDP_RECV_POLL_TIMEOUT_MS) < 0) {
         // SO_RCVTIMEO failed, so use select() to wait
@@ -299,10 +299,10 @@ static void AudioReceiveThreadProc(void* context) {
             Limelog("Received first audio packet after %d ms\n", waitingForAudioMs);
 
             if (firstReceiveTime != 0) {
-                packetsToDrop += (uint32_t)(PltGetMillis() - firstReceiveTime) / AudioPacketDuration;
+                packetsToDrop += (uint32_t)(PltGetMillis() - firstReceiveTime) * 3 / AudioPacketDurationX3;
             }
 
-            Limelog("Initial audio resync period: %d milliseconds\n", packetsToDrop * AudioPacketDuration);
+            Limelog("Initial audio resync period: %d milliseconds\n", packetsToDrop * AudioPacketDurationX3 / 3);
         }
 
         // GFE accumulates audio samples before we are ready to receive them, so
@@ -435,7 +435,7 @@ int startAudioStream(void* audioContext, int arFlags) {
         chosenConfig = NormalQualityOpusConfig;
     }
 
-    chosenConfig.samplesPerFrame = 48 * AudioPacketDuration;
+    chosenConfig.samplesPerFrame = 48 * AudioPacketDurationX3 / 3;
 
     if (AudioCallbacks.init2) {
         err = AudioCallbacks.init2(NegotiatedAudioFormat, StreamConfig.audioConfiguration, &chosenConfig, audioContext, arFlags);
@@ -477,5 +477,5 @@ int LiGetPendingAudioFrames(void) {
 }
 
 int LiGetPendingAudioDuration(void) {
-    return LiGetPendingAudioFrames() * AudioPacketDuration;
+    return LiGetPendingAudioFrames() * AudioPacketDurationX3 / 3;
 }

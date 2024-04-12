@@ -229,7 +229,7 @@ static PRTPA_FEC_BLOCK getFecBlockForRtpPacket(PRTP_AUDIO_QUEUE queue, PRTP_PACK
         // This is a data packet, so we will need to synthesize an FEC header
         fecBlockPayloadType = packet->packetType;
         fecBlockBaseSeqNum = (packet->sequenceNumber / RTPA_DATA_SHARDS) * RTPA_DATA_SHARDS;
-        fecBlockBaseTs = packet->timestamp - ((packet->sequenceNumber - fecBlockBaseSeqNum) * AudioPacketDuration);
+        fecBlockBaseTs = packet->timestamp - (((packet->sequenceNumber - fecBlockBaseSeqNum) * AudioPacketDurationX3 + 2) / 3);
         fecBlockSsrc = packet->ssrc;
 
         blockSize = length - sizeof(RTP_PACKET);
@@ -297,6 +297,10 @@ static PRTPA_FEC_BLOCK getFecBlockForRtpPacket(PRTP_AUDIO_QUEUE queue, PRTP_PACK
         if (existingBlock->fecHeader.baseSequenceNumber == fecBlockBaseSeqNum) {
             // The FEC header data should match for all packets
             LC_ASSERT_VT(existingBlock->fecHeader.payloadType == fecBlockPayloadType);
+            if (existingBlock->fecHeader.baseTimestamp != fecBlockBaseTs) {
+                Limelog("Audio FEC block base timestamp mismatch (got %u, expected %u)\n",
+                        fecBlockBaseTs, existingBlock->fecHeader.baseTimestamp);
+            }
             LC_ASSERT_VT(existingBlock->fecHeader.baseTimestamp == fecBlockBaseTs);
             LC_ASSERT_VT(existingBlock->fecHeader.ssrc == fecBlockSsrc);
 
@@ -447,7 +451,7 @@ static bool completeFecBlock(PRTP_AUDIO_QUEUE queue, PRTPA_FEC_BLOCK block) {
             block->dataPackets[i]->header = 0x80; // RTPv2
             block->dataPackets[i]->packetType = block->fecHeader.payloadType;
             block->dataPackets[i]->sequenceNumber = block->fecHeader.baseSequenceNumber + i;
-            block->dataPackets[i]->timestamp = block->fecHeader.baseTimestamp + (i * AudioPacketDuration);
+            block->dataPackets[i]->timestamp = block->fecHeader.baseTimestamp + (i * AudioPacketDurationX3 / 3);
             block->dataPackets[i]->ssrc = block->fecHeader.ssrc;
 
             block->marks[i] = 0;
@@ -531,7 +535,7 @@ static void handleMissingPackets(PRTP_AUDIO_QUEUE queue) {
     // At this point, we know we've got a second FEC block queued up waiting on the first one to complete.
     // If we've never seen OOS data from this host, we'll assume the first one is lost and skip forward.
     // If we have seen OOS data, we'll wait for a little while longer to see if OOS packets arrive before giving up.
-    if (!queue->receivedOosData || PltGetMillis() - queue->blockHead->queueTimeMs > (uint32_t)(AudioPacketDuration * RTPA_DATA_SHARDS) + RTPQ_OOS_WAIT_TIME_MS) {
+    if (!queue->receivedOosData || PltGetMillis() - queue->blockHead->queueTimeMs > (uint32_t)(AudioPacketDurationX3 * RTPA_DATA_SHARDS / 3) + RTPQ_OOS_WAIT_TIME_MS) {
         LC_ASSERT(!isBefore16(queue->nextRtpSequenceNumber, queue->blockHead->fecHeader.baseSequenceNumber));
 
         Limelog("Unable to recover audio data block %u to %u (%u+%u=%u received < %u needed)\n",

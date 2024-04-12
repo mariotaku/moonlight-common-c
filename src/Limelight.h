@@ -224,12 +224,11 @@ typedef struct _DECODE_UNIT {
 // and to AudioRendererInit() to specify selected codec.
 #define AUDIO_FORMAT_OPUS        0x0001 // Opus audio codec
 #define AUDIO_FORMAT_AC3         0x0100 // AC3 audio codec
-#define AUDIO_FORMAT_AAC         0x1000 // AAC audio codec
+#define AUDIO_FORMAT_EAC3        0x0200 // EAC3 audio codec
 
 // Masks for clients to use to match audio codecs without profile-specific details.
 #define AUDIO_FORMAT_MASK_OPUS   0x000F
 #define AUDIO_FORMAT_MASK_AC3    0x0F00
-#define AUDIO_FORMAT_MASK_AAC    0xF000
 
 // Passed in StreamConfiguration.supportedVideoFormats to specify supported codecs
 // and to DecoderRendererSetup() to specify selected codec.
@@ -516,14 +515,13 @@ void LiInitializeConnectionCallbacks(PCONNECTION_LISTENER_CALLBACKS clCallbacks)
 #define SCM_MASK_10BIT  (SCM_HEVC_MAIN10 | SCM_AV1_MAIN10)
 
 // ServerAudioCodecSupport values
-#define SAC_OPUS 0x00001
-#define SAC_AC3  0x00100
-#define SAC_AAC  0x01000
+#define SAC_OPUS  0x00001
+#define SAC_AC3   0x00100
+#define SAC_EAC3  0x00200
 
 // ServerAudioCodecSupport masks
 #define SAC_MASK_OPUS  0x0000F
 #define SAC_MASK_AC3   0x00F00
-#define SAC_MASK_AAC   0x0F000
 
 typedef struct _SERVER_INFORMATION {
     // Server host name or IP address in text form

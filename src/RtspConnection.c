@@ -1091,7 +1091,15 @@ int performRtspHandshake(PSERVER_INFORMATION serverInfo) {
             }
         }
 
-        if ((StreamConfig.supportedAudioFormats & AUDIO_FORMAT_MASK_AC3) && strstr(response.payload, "x-ss-audio.supportedCodec=ac3")) {
+        unsigned int supportedAudioFormats = 0;
+        if (!parseSdpAttributeToUInt(response.payload, "x-ss-audio.supportedCodec", &supportedAudioFormats)) {
+            supportedAudioFormats = 0;
+        }
+        supportedAudioFormats &= StreamConfig.supportedAudioFormats;
+        if (supportedAudioFormats & AUDIO_FORMAT_EAC3) {
+            NegotiatedAudioFormat = AUDIO_FORMAT_EAC3;
+        }
+        else if (supportedAudioFormats & AUDIO_FORMAT_AC3) {
             NegotiatedAudioFormat = AUDIO_FORMAT_AC3;
         }
         else {
